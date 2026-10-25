@@ -3566,14 +3566,16 @@ function moveE(e,dx,dt){if(inWire(e.x))dx*=.45;const nx=e.x+dx;
    if(e.pass[b.id])continue;e.x=b.x+s0*21;if(e.bkT===undefined)e.bkT=2;e.bkT-=dt;if(e.bkT<=0){b.hp-=1.5*TY[e.t].dmg;e.bkT=2}return}}
  let ax=nx;
  if(!(e.noCol>0)){const m=8*TY[e.t].sc,ey=e.y||G;let blk=null;
-  for(const q of covNear(nx)){if(ey<=G-q.h+1)continue;let c,w;if(q.t===3){c=q.x-q.open*(q.w/2-4);w=4}else{c=q.x;w=q.w/2}
+  for(const q of covNear(nx)){if(ey<=G-q.h+1)continue;let c,w;if(q.t===3&&e.cj>0&&Math.abs(e.x-q.x)>=q.w/2-8){c=q.x;w=q.w/2}else if(q.t===3){c=q.x-q.open*(q.w/2-4);w=4}else{c=q.x;w=q.w/2}
    if(Math.abs(nx-c)<w+m&&Math.abs(nx-c)<Math.abs(e.x-c)){blk=q;break}}
   if(blk){ax=e.x;e.blkT=(e.blkT||0)+dt;
    const inside=blk.t===3&&Math.abs(e.x-blk.x)<blk.w/2-8;
-   if(!inside&&(e.vy||0)===0&&ey>=supE(e)-.5)e.vy=-Math.sqrt(2*1800*(blk.h+16));
-   if(e.blkT>2.2){e.noCol=1.2;e.blkT=0}}
+   if(inside){ax=e.x+blk.open*Math.max(Math.abs(dx),30*dt);e.cj=4;e.blkT=0}
+   else{if((e.vy||0)===0&&ey>=supE(e)-.5)e.vy=-Math.sqrt(2*1800*(blk.h+16));
+    if(e.blkT>2.2){e.noCol=1.2;e.blkT=0}}}
   else e.blkT=0}
  else e.noCol-=dt;
+ if(e.cj>0)e.cj-=dt;
  e.x=ax}
 function playerPart(dt){
  rpOff=!!keys.KeyC;try{playerPart0(dt)}finally{rpOff=false}}
@@ -4034,7 +4036,6 @@ function draw(){if(dmA&&dmA.gn&&!(pvp&&MAPD&&MAPD.spill&&st==='play')&&dmA.gn.ga
  for(const t of TR){ctx.save();ctx.translate(t.x-cam,t.y);ctx.scale(t.f,1);(t.ft?drawFlameTurSpr:drawTurretSpr)(ctx,t.ang,t.fl>0);ctx.restore();if(t.hp<60){ctx.fillStyle='#000';ctx.fillRect(t.x-cam-12,t.y-42,24,4);ctx.fillStyle='#c4503c';ctx.fillRect(t.x-cam-11,t.y-41,22*Math.max(0,t.hp/60),2)}}
  if(ptc)drawCrystal();
  for(const m of MK){ctx.save();ctx.translate(m.x-cam,m.y);drawMedSpr(ctx,m.pool);ctx.restore()}
- for(const e of E){const T=TY[e.t],cl=e.k?KCOL[e.k]:T.col;if(!pvp&&PVM&&PVM.k==='city')manOld(e.x,e.y||G,e.f,e.t>=5?'#5b1a1a':cl,e.fl,e.hit>0,T.sc);else{_mk=e.k|0;man(e.x,e.y||G,e.f,cl,e.fl,e.hit>0,T.sc,undefined,e.t);_mk=0;if(e.t>=6)bossDeco(e,T)}if(e.k)kDeco(e,T)}
  for(let i=Math.floor((cam-200)/CVS)-1;i<=Math.floor((cam+W+200)/CVS)+1;i++){const q=cov(i);if(!q)continue;const bx=q.x-cam,hw=q.w/2,B=G+14,H2=q.h+14,T0=B-H2;
   ctx.fillStyle='rgba(0,0,0,.32)';ctx.beginPath();ctx.ellipse(bx,B+2,hw+5,4,0,0,7);ctx.fill();
   if(q.t===0){ctx.fillStyle='#6b4f2e';ctx.fillRect(bx-hw,T0,q.w,H2);ctx.strokeStyle='#3a2b17';ctx.lineWidth=2;ctx.strokeRect(bx-hw+1,T0+1,q.w-2,H2-2);ctx.beginPath();ctx.moveTo(bx-hw,T0);ctx.lineTo(bx+hw,B);ctx.moveTo(bx+hw,T0);ctx.lineTo(bx-hw,B);ctx.stroke();ctx.fillStyle='#8a6a3f';ctx.fillRect(bx-hw,T0,q.w,4)}
@@ -4054,6 +4055,7 @@ function draw(){if(dmA&&dmA.gn&&!(pvp&&MAPD&&MAPD.spill&&st==='play')&&dmA.gn.ga
   gr2.addColorStop(0,'#5ad8ff');gr2.addColorStop(.5,'#ffffff');gr2.addColorStop(1,'#5ad8ff');
   ctx.fillStyle=gr2;ctx.fillRect(x0,by-5,120,10);
   ctx.fillStyle='rgba(255,255,255,.5)';ctx.fillRect(x0,by-1.5,120,3)}
+ for(const e of E){const T=TY[e.t],cl=e.k?KCOL[e.k]:T.col;if(!pvp&&PVM&&PVM.k==='city')manOld(e.x,e.y||G,e.f,e.t>=5?'#5b1a1a':cl,e.fl,e.hit>0,T.sc);else{_mk=e.k|0;man(e.x,e.y||G,e.f,cl,e.fl,e.hit>0,T.sc,undefined,e.t);_mk=0;if(e.t>=6)bossDeco(e,T)}if(e.k)kDeco(e,T)}
   drawPlayers();drawSmoke();drawDevWpn();drawShells();drawDN();
  ctx.fillStyle='#ffe066';{const bc=ctx.fillStyle;for(const b of PB){if(b.rk){drawRocket(ctx,b.x-cam,b.y+1,Math.sign(b.v)||1,b.x);ctx.fillStyle=bc;continue}if(b.fm||b.fa!==undefined){const a=b.fa!==undefined?b.fa:.38-b.l,r=5+a*18,al=Math.max(0,1-a/.38);ctx.fillStyle=a<.12?'rgba(255,235,120,'+(al*.9)+')':a<.25?'rgba(255,150,40,'+al+')':'rgba(220,70,20,'+al*.8+')';ctx.beginPath();ctx.arc(b.x-cam,b.y+1,r,0,7);ctx.fill()}else{ctx.fillStyle=bc;ctx.fillRect(b.x-cam-4,b.y,9,3)}}ctx.fillStyle=bc}
  ctx.fillStyle='#ff8a3d';for(const b of EB)ctx.fillRect(b.x-cam-4,b.y,9,4);
